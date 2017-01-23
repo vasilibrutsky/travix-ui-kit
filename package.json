@@ -78,7 +78,7 @@
     "jest": "^18.1.0",
     "jest-cli": "^18.1.0",
     "react-addons-test-utils": "^0.14.8",
-    "react-styleguidist": "^4.6.2",
+    "react-styleguidist": "^4.6.3",
     "webpack-hot-middleware": "^2.15.0"
   },
   "greenkeeper": {
