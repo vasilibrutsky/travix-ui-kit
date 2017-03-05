@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "cheerio": "^0.22.0",
-    "coveralls": "^2.11.12",
+    "coveralls": "2.11.16",
     "enzyme": "^2.7.1",
     "enzyme-to-json": "^1.1.4",
     "eslint": "^3.14.0",
