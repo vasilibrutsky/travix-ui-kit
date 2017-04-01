@@ -84,7 +84,7 @@
     "jest-serializer-enzyme": "^1.0.0",
     "react-addons-test-utils": "^0.14.8",
     "react-styleguidist": "^4.6.2",
-    "webpack-hot-middleware": "^2.15.0"
+    "webpack-hot-middleware": "2.17.1"
   },
   "greenkeeper": {
     "ignore": [
