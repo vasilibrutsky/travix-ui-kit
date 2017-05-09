@@ -63,7 +63,7 @@
     "extract-text-webpack-plugin": "^1.0.1",
     "node-sass": "^4.3.0",
     "postcss-loader": "^1.2.2",
-    "prop-types": "^15.5.8",
+    "prop-types": "15.5.8",
     "react": "^0.14.8",
     "react-dom": "^0.14.8",
     "react-select": "^1.0.0-rc.3",
