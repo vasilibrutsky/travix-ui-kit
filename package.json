@@ -60,7 +60,7 @@
     "create-react-class": "^15.5.2",
     "css-loader": "~0.28.1",
     "extract-text-webpack-plugin": "~2.1.0",
-    "node-sass": "^4.3.0",
+    "node-sass": "^4.5.3",
     "postcss-loader": "~2.0.3",
     "prop-types": "^15.5.8",
     "react": "^0.14.8",
