@@ -1,6 +1,26 @@
 import React, { Component, PropTypes } from 'react';
 import { getClassNamesWithMods, getDataAttributes } from '../_helpers';
 
+function isCssTransitionsSupported() {
+  const body = document.body || document.documentElement;
+  const transitions = {
+    'WebkitTransition': 'webkitTransitionEnd',
+    'MozTransition': 'transitionend',
+    'OTransition': 'otransitionend',
+    'transition': 'transitionend',
+  };
+
+  if (body) {
+    for (let prop in transitions) { // eslint-disable-line
+      if (typeof body.style[prop] !== 'undefined') {
+        return transitions[prop];
+      }
+    }
+  }
+
+  return false;
+}
+
 export default class SlidingPanel extends Component {
   constructor(props) {
     super(props);
@@ -11,9 +31,19 @@ export default class SlidingPanel extends Component {
     this.handleActive = this.handleActive.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleTransitionEnd = this.handleTransitionEnd.bind(this);
+    this.toggleOverlay = this.toggleOverlay.bind(this);
+
+    this.overlayTimer = null;
   }
 
+  static cssTransitionEndEvent = isCssTransitionsSupported()
+
   static propTypes = {
+    /**
+     * Defines if the panel is open.
+     */
+    active: PropTypes.bool,
+
     children: PropTypes.oneOfType([
       PropTypes.arrayOf(PropTypes.node),
       PropTypes.node,
@@ -44,14 +74,13 @@ export default class SlidingPanel extends Component {
      */
     onOpen: PropTypes.func,
 
-    /**
-     * Defines if the panel is open.
-     */
-    active: PropTypes.bool,
+    /** Sets the timeout, in miliseconds, for the `transitionend` event to happen  */
+    transitionTimeoutInMs: PropTypes.number,
   }
 
   static defaultProps = {
     closeOnOverlayClick: true,
+    transitionTimeoutInMs: 500,
   }
 
   componentWillReceiveProps(newProps) {
@@ -70,7 +99,9 @@ export default class SlidingPanel extends Component {
       this.handleActive();
     }
 
-    this.panel.addEventListener('transitionend', this.handleTransitionEnd);
+    if (SlidingPanel.cssTransitionEndEvent) {
+      this.panel.addEventListener(SlidingPanel.cssTransitionEndEvent, this.handleTransitionEnd);
+    }
 
     this.closeButton = this.panel.querySelector('[rel="close"]');
     if (this.closeButton) {
@@ -79,7 +110,10 @@ export default class SlidingPanel extends Component {
   }
 
   componentWillUnmount() {
-    this.panel.removeEventListener('transitionend', this.handleTransitionEnd);
+    if (SlidingPanel.cssTransitionEndEvent) {
+      this.panel.removeEventListener(SlidingPanel.cssTransitionEndEvent, this.handleTransitionEnd);
+    }
+
     if (this.closeButton) {
       this.closeButton.removeEventListener('click', this.handleClose);
     }
@@ -99,12 +133,19 @@ export default class SlidingPanel extends Component {
 
   /**
    * Closes the panel.
+   * If CSS Transitions are not supported, immediately triggers the hiding
+   * of the overlay.
    *
    * @method handleClose
-   * @param {SyntheticEvent} e Click event trapped in the overlay element
    */
   handleClose() {
-    this.setState({ isActive: false });
+    this.setState({ isActive: false }, () => {
+      this.overlayTimer = setTimeout(() => this.toggleOverlay(), this.props.transitionTimeoutInMs);
+
+      if (!SlidingPanel.cssTransitionEndEvent) {
+        this.toggleOverlay();
+      }
+    });
   }
 
   /**
@@ -115,6 +156,11 @@ export default class SlidingPanel extends Component {
   handleActive() {
     const { onOpen } = this.props;
 
+    /**
+     * Triggers the removal of the modifier '_hidden' from the overlay element.
+     * Then with the setTimeout(() => {}, 0) delegates the sliding effect - caused
+     * by the isActive state change - to the next frame.
+     */
     this.setState({ isOverlayHidden: false }, () => {
       setTimeout(() => {
         this.setState({ isActive: true }, () => {
@@ -126,15 +172,35 @@ export default class SlidingPanel extends Component {
     });
   }
 
+  /**
+   * Handles the event 'transitionend' triggered by the panel when stops sliding.
+   *
+   * @method handleTransitionEnd
+   * @param {Event} e Event data triggered
+   */
   handleTransitionEnd(e) {
-    const { onClose } = this.props;
-    if (e.propertyName === 'transform') {
-      this.setState({ isOverlayHidden: !this.state.isActive }, () => {
-        if (this.state.isOverlayHidden && onClose) {
-          onClose();
-        }
-      });
+    if (this.overlayTimer) {
+      clearTimeout(this.overlayTimer);
+      this.overlayTimer = null;
     }
+
+    if (e.propertyName === 'transform') {
+      this.toggleOverlay();
+    }
+  }
+
+  /**
+   * Hides the overlay.
+   *
+   * @method toggleOverlay
+   */
+  toggleOverlay() {
+    const { onClose } = this.props;
+    this.setState({ isOverlayHidden: !this.state.isActive }, () => {
+      if (this.state.isOverlayHidden && onClose) {
+        onClose();
+      }
+    });
   }
 
   render() {
