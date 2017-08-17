@@ -60,7 +60,7 @@
     "commander": "^2.9.0",
     "coveralls": "^2.11.12",
     "create-react-class": "^15.5.2",
-    "css-loader": "~0.28.1",
+    "css-loader": "~0.28.5",
     "enzyme-to-json": "^1.1.4",
     "enzyme": "^2.7.1",
     "eslint-config-travix": "^2.2.0",
